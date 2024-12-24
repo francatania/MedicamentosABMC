@@ -5,7 +5,7 @@ interface Props{
 }
 
 const MedicamentosList: React.FC<Props> = ({medicamentos}) =>{
-  console.log(medicamentos)
+
     return <>
     <div className="max-h-[80vh] overflow-auto">
       <table>
@@ -21,7 +21,7 @@ const MedicamentosList: React.FC<Props> = ({medicamentos}) =>{
 
         <tbody>
         {medicamentos.map((medicamento, index) => (
-            <tr key={medicamento.idMedicamento} className={`${index % 2 === 0 ? "bg-blue-300" : "bg-white"} hover:bg-blue-400`}>
+            <tr key={medicamento.idMedicamento} className={`${index % 2 === 0 ? "bg-gray-100" : "bg-white"} hover:bg-gray-200`}>
               <td>{medicamento.nombreMedicamento}</td>
               <td>{medicamento.marca}</td>
               <td>{medicamento.activo ? "Sí" : "No"}</td>
