@@ -28,7 +28,7 @@ const MedicamentosFilter: React.FC<Filters> = ({onSearchFunction}) =>{
     }, [])
 
     return (
-<div className="w-full pt-4 rounded-md h-[8vh] ">
+<div className="w-full pt-4 rounded-md h-[10vh] ">
   <div className="flex flex-col md:flex-row items-center gap-4">
 
     <div className="flex flex-col w-full md:w-1/4">
@@ -71,7 +71,7 @@ const MedicamentosFilter: React.FC<Filters> = ({onSearchFunction}) =>{
       </label>
     </div>
 
-    <div className="flex items-end justify-center  w-full md:w-1/4">
+    <div className="flex items-end justify-start  w-full md:w-1/4">
         <input type="submit" 
         value="Buscar" 
         onClick={() => onSearchFunction({
@@ -81,6 +81,12 @@ const MedicamentosFilter: React.FC<Filters> = ({onSearchFunction}) =>{
 
         })}
         className="bg-blue-500 text-white p-2 rounded-md w-1/2 hover:cursor-pointer"/>
+    </div>
+
+    <div className="flex items-end justify-end  w-full md:w-1/4">
+        <input type="submit" 
+        value="Agregar" 
+        className="bg-green-500 text-white p-2 rounded-md w-1/2 hover:cursor-pointer"/>
     </div>
   </div>
 </div>
