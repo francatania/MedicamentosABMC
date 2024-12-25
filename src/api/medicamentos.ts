@@ -4,10 +4,16 @@ import { Marca } from "../interfaces/Marca";
 const API_URL_GETALL = "https://localhost:44379/api/Medicamento"
 const API_URL_GET_BY_FILTER = "https://localhost:44379/api/Medicamento/Filter?"
 const API_URL_GET_MARCAS = "https://localhost:44379/api/Marca";
+const API_URL_GET_BY_ID = "https://localhost:44379/api/Medicamento/Id"
 
+const getToken = () =>{
+    const token = localStorage.getItem("token");
+    return token;
+
+}
 export const getAllMedicamentos = async(): Promise<Medicamento[]> =>{
 
-    const token = localStorage.getItem("token");
+    const token = getToken();
 
     if(!token){
         throw new Error("Error al obtener el token.")
@@ -35,7 +41,7 @@ export const getMedByFilter = async(filters: {
     IdMarca? : number,
     Activo?: boolean
 }): Promise<Medicamento[]> =>{
-    const token = localStorage.getItem("token");
+    const token = getToken();
     const params = new URLSearchParams;
 
     if(filters.NombreComercial) params.append("NombreComercial", filters.NombreComercial);
@@ -62,7 +68,7 @@ export const getMedByFilter = async(filters: {
 }
 
 export const getMarcas = async(): Promise<Marca[]> => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     const response = await fetch(API_URL_GET_MARCAS, {
         method: "GET",
         headers: {
@@ -73,6 +79,25 @@ export const getMarcas = async(): Promise<Marca[]> => {
 
     if(!response.ok){
         throw new Error("Error al obtener las marcas");
+    }
+
+    return response.json();
+}
+
+export const getMedById = async(id: number) =>{
+    const token = getToken();
+    const url = `${API_URL_GET_BY_ID}?id=${id}`
+    console.log(url)
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "aplicattion/json"
+        }
+    });
+
+    if(!response.ok){
+        throw new Error("Error al obtener el medicamento.");
     }
 
     return response.json();
