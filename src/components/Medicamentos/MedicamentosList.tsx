@@ -1,22 +1,32 @@
 import { Medicamento } from "../../interfaces/Medicamento";
 import { useMedicamento } from "../../context/MedicamentoContext";
 import { useNavigate } from "react-router-dom";
-import { getMedById } from "../../api/medicamentos";
+import { getMedById, getMedByIdSaveDto } from "../../api/medicamentos";
 
 interface Props{
     medicamentos: Medicamento[]
 }
 
 const MedicamentosList: React.FC<Props> = ({medicamentos}) =>{
-  const {selectMedicamento} = useMedicamento();
+  const {selectMedicamento, selectMedicamentoSave} = useMedicamento();
   const navigate = useNavigate();
 
   const handleViewMed = async(id:number) =>{
     try {
       const medicamento= await getMedById(id);
-      console.log(medicamento);
       selectMedicamento(medicamento);
       navigate("/medicamentos/view");
+    } catch (error) {
+      console.error(error)
+    }
+
+  }
+
+  const handleEditMed = async(id:number) =>{
+    try {
+      const medicamento= await getMedByIdSaveDto(id);
+      selectMedicamentoSave(medicamento);
+      navigate("/medicamentos/edit");
     } catch (error) {
       console.error(error)
     }
@@ -37,7 +47,7 @@ const MedicamentosList: React.FC<Props> = ({medicamentos}) =>{
         </thead>
 
         <tbody>
-        {medicamentos.map((medicamento, index) => (
+        {medicamentos.map((medicamento) => (
             <tr key={medicamento.idMedicamento} className={` hover:bg-gray-200 transition-colors duration-200 ease-in-out w-full`}>
               <td className="w-1/5">{medicamento.nombreMedicamento}</td>
               <td className="w-1/5">{medicamento.marca}</td>
@@ -46,7 +56,7 @@ const MedicamentosList: React.FC<Props> = ({medicamentos}) =>{
               <td className="w-1/5">
               <div className="w-full justify-around flex">
                 <i className="fa-regular fa-eye hover:cursor-pointer" onClick={() => handleViewMed(medicamento.idMedicamento)}></i>
-                <i className="fa-regular fa-pen-to-square hover:cursor-pointer"></i>
+                <i className="fa-regular fa-pen-to-square hover:cursor-pointer" onClick={()=>handleEditMed(medicamento.idMedicamento)}></i>
                 <i className="fa-solid fa-trash hover:cursor-pointer"></i>
                 </div>
                 </td>

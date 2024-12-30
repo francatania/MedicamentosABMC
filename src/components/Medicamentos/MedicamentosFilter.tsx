@@ -10,7 +10,7 @@ const MedicamentosFilter: React.FC<Filters> = ({onSearchFunction}) =>{
     const [marcas, setMarcas] = useState<Marca[]>([])
     const [selectedMarca, setSelectedMarca] = useState<number | undefined>();
     const [nombre, setNombre] = useState<string | undefined>();
-    const [activo, setActivo] = useState<boolean | undefined>(undefined);
+    const [activo, setActivo] = useState<boolean>(false);
 
     useEffect(()=>{
         const fetchMarcas = async () =>{
@@ -63,7 +63,7 @@ const MedicamentosFilter: React.FC<Filters> = ({onSearchFunction}) =>{
         id="activo"
         type="checkbox"
 
-        onChange={(e) => setActivo(e.target.checked ? true : undefined)}
+        onChange={(e) => setActivo(e.target.checked ? true : false)}
         className="h-5 w-5 border-gray-300 rounded focus:ring-blue-500"
       />
       <label htmlFor="activo" className="ml-2 text-sm font-medium text-gray-700">
