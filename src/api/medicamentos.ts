@@ -3,6 +3,7 @@ import { Marca } from "../interfaces/Marca";
 import { Laboratorio } from "../interfaces/Laboratorio";
 import { Presentacion } from "../interfaces/Presentacion";
 import { Monodroga } from "../interfaces/Monodroga";
+import { MedicamentoSave } from "../interfaces/MedicamentoSave";
 
 const API_URL_GETALL = "https://localhost:44379/api/Medicamento"
 const API_URL_GET_BY_FILTER = "https://localhost:44379/api/Medicamento/Filter?"
@@ -12,6 +13,7 @@ const API_URL_GET_MONODROGA = "https://localhost:44379/api/Monodroga";
 const API_URL_GET_PRESENTACION = "https://localhost:44379/api/Presentacion";
 const API_URL_GET_BY_ID = "https://localhost:44379/api/Medicamento/Id";
 const API_URL_GET_BY_ID_SAVE_DTO = "https://localhost:44379/api/Medicamento/GetForSave/id";
+const API_URL_EDIT_MED = "https://localhost:44379/api/Medicamento";
 
 const getToken = () =>{
     const token = localStorage.getItem("token");
@@ -26,12 +28,12 @@ export const getAllMedicamentos = async(): Promise<Medicamento[]> =>{
         throw new Error("Error al obtener el token.")
     }
 
-
+    
     const response = await fetch(API_URL_GETALL, {
         method: "GET",
         headers: {
             "Authorization": `Bearer ${token}`,
-            "Content-Type": "aplicattion/json"
+            "Content-Type": "application/json"
         }
     });
 
@@ -65,7 +67,7 @@ export const getMedByFilter = async(filters: {
         method: "GET",
         headers: {
             "Authorization": `Bearer ${token}`,
-            "Content-Type": "aplicattion/json"
+            "Content-Type": "application/json"
         }
     });
 
@@ -82,7 +84,7 @@ export const getMarcas = async(): Promise<Marca[]> => {
         method: "GET",
         headers: {
             "Authorization": `Bearer ${token}`,
-            "Content-Type": "aplicattion/json"
+            "Content-Type": "application/json"
         }
     });
 
@@ -99,7 +101,7 @@ export const getLabs = async(): Promise<Laboratorio[]> => {
         method: "GET",
         headers: {
             "Authorization": `Bearer ${token}`,
-            "Content-Type": "aplicattion/json"
+            "Content-Type": "application/json"
         }
     });
 
@@ -116,7 +118,7 @@ export const getPresentaciones = async(): Promise<Presentacion[]> => {
         method: "GET",
         headers: {
             "Authorization": `Bearer ${token}`,
-            "Content-Type": "aplicattion/json"
+            "Content-Type": "application/json"
         }
     });
 
@@ -133,7 +135,7 @@ export const getMonodrogas = async(): Promise<Monodroga[]> => {
         method: "GET",
         headers: {
             "Authorization": `Bearer ${token}`,
-            "Content-Type": "aplicattion/json"
+            "Content-Type": "application/json"
         }
     });
 
@@ -155,12 +157,13 @@ export const getMedById = async(id: number) =>{
         method: 'GET',
         headers: {
             "Authorization": `Bearer ${token}`,
-            "Content-Type": "aplicattion/json"
+            "Content-Type": "application/json"
         }
     });
 
     if(!response.ok){
-        throw new Error("Error al obtener el medicamento.");
+        const errorMessage = await response.text()
+        throw new Error(`Error ${response.status}: ${errorMessage}`);
     }
 
     return response.json();
@@ -173,13 +176,37 @@ export const getMedByIdSaveDto = async(id: number) =>{
         method: 'GET',
         headers: {
             "Authorization": `Bearer ${token}`,
-            "Content-Type": "aplicattion/json"
+            "Content-Type": "application/json"
         }
     });
 
     if(!response.ok){
-        throw new Error("Error al obtener el medicamento.");
+        const errorMessage = await response.text()
+        throw new Error(`Error ${response.status}: ${errorMessage}`);
+    }
+    return response.json();
+}
+
+export const editMed = async(oMed: MedicamentoSave) =>{
+    const token = getToken();
+    try {
+        const response = await fetch(API_URL_EDIT_MED,{
+            method: 'PUT',
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(oMed)
+        });
+
+        if(!response.ok){
+            const errorMessage = await response.text()
+            throw new Error(`Error ${response.status}: ${errorMessage}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        throw error;
     }
 
-    return response.json();
 }

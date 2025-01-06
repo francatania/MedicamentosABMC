@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
 import { Medicamento } from "../../interfaces/Medicamento";
 import { useMedicamento } from "../../context/MedicamentoContext";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Monodroga } from "../../interfaces/Monodroga";
 import { Presentacion } from "../../interfaces/Presentacion";
 import { Laboratorio } from "../../interfaces/Laboratorio";
 import {Marca} from "../../interfaces/Marca";
-import { getMarcas, getLabs, getPresentaciones, getMonodrogas } from "../../api/medicamentos";
+import { getMarcas, getLabs, getPresentaciones, getMonodrogas, editMed } from "../../api/medicamentos";
 import { MedicamentoSave } from "../../interfaces/MedicamentoSave";
 
 
 const MedicamentoCard: React.FC = ()=>{
     const [data, setData] = useState<Medicamento| null>();
-    const [dataMedSave, setDataMedSave] = useState<MedicamentoSave | null>();
+    const [dataMedSave, setDataMedSave] = useState<MedicamentoSave>();
     const [monodrogas, setMonodrogas] = useState<Monodroga[]>();
     const [presentaciones, setPresentaciones] = useState<Presentacion[]>();
     const [laboratorios, setLaboratorios] = useState<Laboratorio[]>();
@@ -20,6 +20,7 @@ const MedicamentoCard: React.FC = ()=>{
     const {selectedMedicamento, selectedMedicamentoSave} = useMedicamento()
     const location = useLocation();
     const action = location.pathname.includes("view") ? "view" : location.pathname.includes("edit") ? "edit" : "create";
+    const navigate = useNavigate();
 
     useEffect(() =>{
         if((action === "view") && selectedMedicamento){
@@ -55,6 +56,19 @@ const MedicamentoCard: React.FC = ()=>{
 
     },[])
 
+    const handleEditMed = async() =>{
+        if(!dataMedSave){
+            return
+        }
+        try {
+            await editMed(dataMedSave);
+            console.log("medicamento editado");
+            navigate('/medicamentos')
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>)=>{
         if (!dataMedSave) return;
         const {name, value, type} = e.target;
@@ -77,7 +91,7 @@ const MedicamentoCard: React.FC = ()=>{
                     <h2 className="text-xl">Detalle</h2>
                 </div>
             </div>
-            <div className="w-[50%] bg-white h-[75%] rounded-b-lg p-4 shadow-lg border-r-2 border-l-2 border-b-2 border-gray-300">
+            <div className="w-[50%] bg-white h-[75%] rounded-b-lg p-4 shadow-lg border-r-2 border-l-2 border-b-2 border-gray-300 flex flex-col justify-between">
                 <div className="flex justify-between w-full">
                     <div className="flex flex-col w-[40%]">
                         <label htmlFor="">Id</label>
@@ -203,14 +217,14 @@ const MedicamentoCard: React.FC = ()=>{
                     </div>
                 </div>
                 <div className="flex justify-between w-full mt-2">
-                    <div className="flex items-center justify-around w-[30%]">
+                    <div className={action === "view" ?"flex flex-col items-start justify-around w-[30%]}" : "flex items-center justify-around w-[30%]"}>
                         <label htmlFor="" className="">Venta Libre</label>
                         {action === "view" ?<input type="text" disabled className="text-black border-2 border-gray-300 p-2 rounded-md" value={data?.ventaLibre ? "Sí" : "No"} /> 
                         : 
                         <input name="ventaLibre" onChange={handleChange} type="checkbox" checked ={dataMedSave?.ventaLibre || false}/> } 
                         
                     </div>
-                    <div className="flex items-center justify-around w-[30%]">
+                    <div className={action === "view" ?"flex flex-col items-start justify-around w-[30%]}" : "flex items-center justify-around w-[30%]"}>
                         <label htmlFor="">Activo</label>
                         {action === "view" ?<input type="text" disabled className="text-black border-2 border-gray-300 p-2 rounded-md" value={data?.activo ? "Sí" : "No"} /> 
                         : 
@@ -228,8 +242,18 @@ const MedicamentoCard: React.FC = ()=>{
                         
                     </div>
                 </div>
-                <div></div>
+                
+                
+                <div className="flex justify-center">
+                    {action === "edit" ? 
+                    <button className="bg-blue-500 hover:bg-blue-600  ease-in duration-75 rounded-md p-2 text-white w-1/2 " onClick={handleEditMed}>Editar</button>
+                    :
+                    <button>Guardar</button>
+                    }
+                    
+                </div>
             </div>
+
 
         </div>
 
