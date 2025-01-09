@@ -33,6 +33,8 @@ const MedicamentosList: React.FC<Props> = ({medicamentos}) =>{
 
   }
 
+
+
     return <>
     <div className="max-h-[80vh] overflow-auto">
       <table className="w-full">

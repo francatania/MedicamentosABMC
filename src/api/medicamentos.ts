@@ -14,6 +14,8 @@ const API_URL_GET_PRESENTACION = "https://localhost:44379/api/Presentacion";
 const API_URL_GET_BY_ID = "https://localhost:44379/api/Medicamento/Id";
 const API_URL_GET_BY_ID_SAVE_DTO = "https://localhost:44379/api/Medicamento/GetForSave/id";
 const API_URL_EDIT_MED = "https://localhost:44379/api/Medicamento";
+const API_URL_SAVE_MED = "https://localhost:44379/api/Medicamento";
+const API_URL_GET_MAX_ID = "https://localhost:44379/api/Medicamento/LastId";
 
 const getToken = () =>{
     const token = localStorage.getItem("token");
@@ -149,7 +151,7 @@ export const getMonodrogas = async(): Promise<Monodroga[]> => {
 
 
 
-export const getMedById = async(id: number) =>{
+export const getMedById = async(id: number):Promise<Medicamento> =>{
     const token = getToken();
     const url = `${API_URL_GET_BY_ID}?id=${id}`
     console.log(url)
@@ -169,7 +171,7 @@ export const getMedById = async(id: number) =>{
     return response.json();
 }
 
-export const getMedByIdSaveDto = async(id: number) =>{
+export const getMedByIdSaveDto = async(id: number):Promise<MedicamentoSave> =>{
     const token = getToken();
     const url = `${API_URL_GET_BY_ID_SAVE_DTO}?id=${id}`
     const response = await fetch(url, {
@@ -187,7 +189,7 @@ export const getMedByIdSaveDto = async(id: number) =>{
     return response.json();
 }
 
-export const editMed = async(oMed: MedicamentoSave) =>{
+export const editMed = async(oMed: MedicamentoSave): Promise<any> =>{
     const token = getToken();
     try {
         const response = await fetch(API_URL_EDIT_MED,{
@@ -209,4 +211,41 @@ export const editMed = async(oMed: MedicamentoSave) =>{
         throw error;
     }
 
+}
+
+export const saveMed = async(oMed: MedicamentoSave):Promise<any> =>{
+    const token = getToken();
+    try {
+        const response = await fetch(API_URL_SAVE_MED,{
+            method: 'POST',
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(oMed)
+        });
+
+        if(!response.ok){
+            const errorMessage = await response.text()
+            throw new Error(`Error ${response.status}: ${errorMessage}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export const getLastId = async():Promise<number>=>{
+    try {
+        const response = await fetch(API_URL_GET_MAX_ID);
+        if(!response.ok){
+            const errorMessage = await response.text()
+            throw new Error(`Error ${response.status}: ${errorMessage}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
 }

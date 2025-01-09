@@ -1,22 +1,37 @@
-import { useEffect, useState } from "react";
+import { act, useEffect, useState } from "react";
 import { Medicamento } from "../../interfaces/Medicamento";
 import { useMedicamento } from "../../context/MedicamentoContext";
+import { useToast } from "../../context/ToastContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Monodroga } from "../../interfaces/Monodroga";
 import { Presentacion } from "../../interfaces/Presentacion";
 import { Laboratorio } from "../../interfaces/Laboratorio";
 import {Marca} from "../../interfaces/Marca";
-import { getMarcas, getLabs, getPresentaciones, getMonodrogas, editMed } from "../../api/medicamentos";
+import { getMarcas, getLabs, getPresentaciones, getMonodrogas, editMed, saveMed, getLastId } from "../../api/medicamentos";
 import { MedicamentoSave } from "../../interfaces/MedicamentoSave";
 
 
 const MedicamentoCard: React.FC = ()=>{
     const [data, setData] = useState<Medicamento| null>();
-    const [dataMedSave, setDataMedSave] = useState<MedicamentoSave>();
+    const [lastId, setLastId] = useState<number>(0);
+    const [dataMedSave, setDataMedSave] = useState<MedicamentoSave>({
+        idMedicamento: lastId + 1, 
+        nombreMedicamento: "",
+        idMarca: 0,
+        idLaboratorio: 0,
+        idMonodroga: 0,
+        idPresentacion: 0,
+        descripcion: "",
+        ventaLibre: false,
+        activo: false,
+        precio: 0,
+      });
     const [monodrogas, setMonodrogas] = useState<Monodroga[]>();
     const [presentaciones, setPresentaciones] = useState<Presentacion[]>();
     const [laboratorios, setLaboratorios] = useState<Laboratorio[]>();
     const [marca, setMarcas] = useState<Marca[]>([]);
+    const { setEdited, setCreated } = useToast();
+    
     const {selectedMedicamento, selectedMedicamentoSave} = useMedicamento()
     const location = useLocation();
     const action = location.pathname.includes("view") ? "view" : location.pathname.includes("edit") ? "edit" : "create";
@@ -30,6 +45,42 @@ const MedicamentoCard: React.FC = ()=>{
         }
 
     }, [action, selectedMedicamento])
+
+    useEffect(() => {
+        if (action === "create" && lastId !== 0) {
+          setDataMedSave({
+            idMedicamento: lastId + 1,
+            nombreMedicamento: "",
+            idMarca: 0,
+            idLaboratorio: 0,
+            idMonodroga: 0,
+            idPresentacion: 0,
+            descripcion: "",
+            ventaLibre: false,
+            activo: false,
+            precio: 0,
+          });
+        }
+      }, [action, lastId]);
+
+
+    useEffect(()=>{console.log(action)}, [])
+
+    useEffect(() =>{
+        const fetchLastId = async() =>{
+            try {
+                if(action === "create"){
+                    const id = await getLastId();
+                    setLastId(id);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        fetchLastId();
+
+    }, [])
 
     useEffect(()=>{
         const fetchSelects = async() =>{
@@ -56,13 +107,27 @@ const MedicamentoCard: React.FC = ()=>{
 
     },[])
 
-    const handleEditMed = async() =>{
+    const handleEditMed = async(): Promise<void> =>{
         if(!dataMedSave){
             return
         }
         try {
             await editMed(dataMedSave);
-            console.log("medicamento editado");
+            setEdited();
+            navigate('/medicamentos')
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    const handleSaveMed = async(): Promise<void> =>{
+        if(!dataMedSave){
+            return
+        }
+        try {
+            const response = await saveMed(dataMedSave);
+            setCreated();
+            console.log("medicamento agregado");
             navigate('/medicamentos')
         } catch (error) {
             console.error(error);
@@ -70,13 +135,13 @@ const MedicamentoCard: React.FC = ()=>{
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>)=>{
-        if (!dataMedSave) return;
-        const {name, value, type} = e.target;
+        const { name, value, type } = e.target;
 
-        setDataMedSave({
-            ...dataMedSave,
-            [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
-        });
+        setDataMedSave((prevData) => ({
+          ...prevData,
+          [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+        }));
+
     }
 
 
@@ -98,9 +163,13 @@ const MedicamentoCard: React.FC = ()=>{
                         {action === "view" ?                         
                         <input type="text"
                         disabled className="text-black border-2 border-gray-300 p-2 rounded-md" value={data?.idMedicamento} />
-                        :
+                        : action === "edit" ? 
                         <input type="text"
-                        disabled className="text-black border-2 border-gray-300 p-2 rounded-md" value={dataMedSave?.idMedicamento} />}
+                        disabled className="text-black border-2 border-gray-300 p-2 rounded-md" value={dataMedSave?.idMedicamento} />
+                        :                        
+                        <input type="text"
+                        disabled className="text-black border-2 border-gray-300 p-2 rounded-md" value={lastId + 1} />
+                        }
 
                     </div>
 
@@ -109,6 +178,10 @@ const MedicamentoCard: React.FC = ()=>{
                             
                         {action === "view" ? 
                          <input type="text" disabled name="nombreMedicamento" className="text-black border-2 border-gray-300 p-2 rounded-md" value={data?.nombreMedicamento}
+                        />
+                        :
+                        action === "create"?
+                        <input type="text" name="nombreMedicamento" className="text-black border-2 border-gray-300 p-2 rounded-md" onChange={handleChange}
                         />
                         :
                         <input type="text"  name="nombreMedicamento" className="text-black border-2 border-gray-300 p-2 rounded-md" value={dataMedSave?.nombreMedicamento}
@@ -131,7 +204,7 @@ const MedicamentoCard: React.FC = ()=>{
                           </option>
                             
                             :
-                            <option value="" disabled> Marcas</option>
+                            <option value="" disabled selected> Marcas</option>
                             }
                             {marca?.map(m => ( 
                                 <option value={m.idMarca} key={m.idMarca}> {m.nombreMarca}</option>
@@ -151,7 +224,7 @@ const MedicamentoCard: React.FC = ()=>{
                           </option>
                             
                             :
-                            <option value="" disabled> Marcas</option>
+                            <option value="" disabled selected> Laboratorios</option>
                             }
                             {laboratorios?.map(m => ( 
                                 <option value={m.idLaboratorio} key={m.idLaboratorio}> {m.nombreLaboratorio}</option>
@@ -173,7 +246,7 @@ const MedicamentoCard: React.FC = ()=>{
                           </option>
                             
                             :
-                            <option value="" disabled> Marcas</option>
+                            <option value="" disabled selected> Monodrogas</option>
                             }
                             {monodrogas?.map(m => ( 
                                 <option value={m.idMonodroga} key={m.idMonodroga}> {m.monodroga1}</option>
@@ -193,7 +266,7 @@ const MedicamentoCard: React.FC = ()=>{
                           </option>
                             
                             :
-                            <option value="" disabled> Presentaciones</option>
+                            <option value="" disabled selected> Presentaciones</option>
                             }
                             {presentaciones?.map(m => ( 
                                 <option value={m.idPresentacion} key={m.idPresentacion}> {m.nombrePresentacion}</option>
@@ -209,6 +282,12 @@ const MedicamentoCard: React.FC = ()=>{
                         <input type="text"
                         disabled className="text-black border-2 border-gray-300 p-2 rounded-md" value={data?.descripcion} />
                         :
+                        action === "create"?
+                        <input type="text"
+                        name="descripcion"
+                         className="text-black border-2 border-gray-300 p-2 rounded-md" onChange={handleChange}  />
+                         
+                        :
                         <input type="text"
                         name="descripcion"
                         className="text-black border-2 border-gray-300 p-2 rounded-md" value={dataMedSave?.descripcion}
@@ -221,6 +300,9 @@ const MedicamentoCard: React.FC = ()=>{
                         <label htmlFor="" className="">Venta Libre</label>
                         {action === "view" ?<input type="text" disabled className="text-black border-2 border-gray-300 p-2 rounded-md" value={data?.ventaLibre ? "Sí" : "No"} /> 
                         : 
+                        action === "create"?
+                        <input name="ventaLibre" onChange={handleChange} type="checkbox"/> 
+                        :
                         <input name="ventaLibre" onChange={handleChange} type="checkbox" checked ={dataMedSave?.ventaLibre || false}/> } 
                         
                     </div>
@@ -228,6 +310,9 @@ const MedicamentoCard: React.FC = ()=>{
                         <label htmlFor="">Activo</label>
                         {action === "view" ?<input type="text" disabled className="text-black border-2 border-gray-300 p-2 rounded-md" value={data?.activo ? "Sí" : "No"} /> 
                         : 
+                        action === "create"?
+                        <input name="activo" onChange={handleChange} type="checkbox"/> 
+                        :
                         <input name="activo" onChange={handleChange} type="checkbox" checked = {dataMedSave?.activo || false}/>  } 
                         
                     </div>
@@ -236,7 +321,10 @@ const MedicamentoCard: React.FC = ()=>{
                         {action === "view" ?
                          <input type="text" disabled className="text-black border-2 border-gray-300 p-2 rounded-md" value={`$${data?.precio}`}/> 
                         :
-                        <input type="text" name="precio" className="text-black border-2 border-gray-300 p-2 rounded-md" value={`$${dataMedSave?.precio}`}/> 
+                        action === "create"?
+                        <input type="text"  className="text-black border-2 border-gray-300 p-2 rounded-md" name="precio" onChange={handleChange} /> 
+                        :
+                        <input type="text" name="precio" onChange={handleChange} className="text-black border-2 border-gray-300 p-2 rounded-md" value={`${dataMedSave?.precio}`}/> 
                         }
 
                         
@@ -248,7 +336,10 @@ const MedicamentoCard: React.FC = ()=>{
                     {action === "edit" ? 
                     <button className="bg-blue-500 hover:bg-blue-600  ease-in duration-75 rounded-md p-2 text-white w-1/2 " onClick={handleEditMed}>Editar</button>
                     :
-                    <button>Guardar</button>
+                    action === "create" ? 
+                    <button className="bg-blue-500 hover:bg-blue-600  ease-in duration-75 rounded-md p-2 text-white w-1/2 " onClick={handleSaveMed}>Guardar</button>
+                    :
+                    <></>
                     }
                     
                 </div>

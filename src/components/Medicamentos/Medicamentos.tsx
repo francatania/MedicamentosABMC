@@ -8,8 +8,11 @@ import MedicamentosFilter from "./MedicamentosFilter";
 const Medicamentos: React.FC = () =>{
     const [medicamentos, setMedicamentos] = useState<Medicamento[]>([]);
 
+
+ 
+
     useEffect(()=>{
-        const fetchMeds = async () =>{
+        const fetchMeds = async (): Promise<void> =>{
             try {
                 const data = await getAllMedicamentos();
                 setMedicamentos(data);
@@ -22,7 +25,7 @@ const Medicamentos: React.FC = () =>{
 
     }, [])
 
-    const handleSearch = async (filters: {NombreComercial? : string, IdMarca?:number, Activo?: boolean}) =>{
+    const handleSearch = async (filters: {NombreComercial? : string, IdMarca?:number, Activo?: boolean}): Promise<void> =>{
 
         try {
             const data = await getMedByFilter(filters);
@@ -39,6 +42,8 @@ const Medicamentos: React.FC = () =>{
             <MedicamentosFilter onSearchFunction = {handleSearch}/>
             <MedicamentosList
                 medicamentos ={medicamentos}/>
+
+
         </div>
 
     )

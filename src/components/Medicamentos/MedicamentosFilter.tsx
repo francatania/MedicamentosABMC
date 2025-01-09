@@ -1,5 +1,7 @@
 import { getMarcas } from "../../api/medicamentos"
 import { Marca } from "../../interfaces/Marca"
+import { useMedicamento } from "../../context/MedicamentoContext";
+import { useNavigate } from "react-router-dom";
 import { act, useEffect, useState } from "react"
 
 interface Filters{
@@ -11,6 +13,8 @@ const MedicamentosFilter: React.FC<Filters> = ({onSearchFunction}) =>{
     const [selectedMarca, setSelectedMarca] = useState<number | undefined>();
     const [nombre, setNombre] = useState<string | undefined>();
     const [activo, setActivo] = useState<boolean>(false);
+    const {selectMedicamento, selectMedicamentoSave} = useMedicamento();
+    const navigate = useNavigate();
 
     useEffect(()=>{
         const fetchMarcas = async () =>{
@@ -26,6 +30,16 @@ const MedicamentosFilter: React.FC<Filters> = ({onSearchFunction}) =>{
         fetchMarcas();
         
     }, [])
+
+    const handleSaveMed = async() =>{
+      try {
+        selectMedicamentoSave(null);
+        navigate("/medicamentos/create");
+      } catch (error) {
+        console.error(error)
+      }
+  
+    }
 
     return (
 <div className="w-full pt-4 rounded-md h-[10vh] ">
@@ -86,7 +100,8 @@ const MedicamentosFilter: React.FC<Filters> = ({onSearchFunction}) =>{
     <div className="flex items-end justify-end  w-full md:w-1/4">
         <input type="submit" 
         value="Agregar" 
-        className="bg-green-500 text-white p-2 rounded-md w-1/2 hover:cursor-pointer"/>
+        className="bg-green-500 text-white p-2 rounded-md w-1/2 hover:cursor-pointer"
+        onClick={() => handleSaveMed()}/>
     </div>
   </div>
 </div>
