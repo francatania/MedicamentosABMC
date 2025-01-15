@@ -9,18 +9,18 @@ const Medicamentos: React.FC = () =>{
     const [medicamentos, setMedicamentos] = useState<Medicamento[]>([]);
 
 
- 
+    const fetchMeds = async (): Promise<void> =>{
+        try {
+            const data = await getAllMedicamentos();
+            setMedicamentos(data);
+        } catch (error: any) {
+            console.error(error.message);
+        }
+
+    }
 
     useEffect(()=>{
-        const fetchMeds = async (): Promise<void> =>{
-            try {
-                const data = await getAllMedicamentos();
-                setMedicamentos(data);
-            } catch (error: any) {
-                console.error(error.message);
-            }
 
-        }
         fetchMeds();
 
     }, [])
@@ -41,7 +41,9 @@ const Medicamentos: React.FC = () =>{
             <h1 className="text-2xl text-center">Listado de Medicamentos</h1>
             <MedicamentosFilter onSearchFunction = {handleSearch}/>
             <MedicamentosList
-                medicamentos ={medicamentos}/>
+                medicamentos ={medicamentos}
+                onDeleteMed = {fetchMeds}/>
+                
 
 
         </div>

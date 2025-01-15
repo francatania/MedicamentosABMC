@@ -16,6 +16,7 @@ const API_URL_GET_BY_ID_SAVE_DTO = "https://localhost:44379/api/Medicamento/GetF
 const API_URL_EDIT_MED = "https://localhost:44379/api/Medicamento";
 const API_URL_SAVE_MED = "https://localhost:44379/api/Medicamento";
 const API_URL_GET_MAX_ID = "https://localhost:44379/api/Medicamento/LastId";
+const API_URL_DELETE_MED_ID = "https://localhost:44379/api/Medicamento?"
 
 const getToken = () =>{
     const token = localStorage.getItem("token");
@@ -239,6 +240,27 @@ export const saveMed = async(oMed: MedicamentoSave):Promise<any> =>{
 export const getLastId = async():Promise<number>=>{
     try {
         const response = await fetch(API_URL_GET_MAX_ID);
+        if(!response.ok){
+            const errorMessage = await response.text()
+            throw new Error(`Error ${response.status}: ${errorMessage}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export const deleteMed = async(id:number):Promise<void>=>{
+    const token = getToken();
+    const url = `${API_URL_DELETE_MED_ID}id=${id}`
+    try {
+        const response = await fetch(url,{
+            method: 'DELETE',
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },});
         if(!response.ok){
             const errorMessage = await response.text()
             throw new Error(`Error ${response.status}: ${errorMessage}`);
