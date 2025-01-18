@@ -17,7 +17,7 @@ const LoginForm: React.FC = ()=>{
         setIsLoading(true);
 
         try {
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+            await new Promise((resolve) => setTimeout(resolve, 500));
             const token = await login({username, password});
             localStorage.setItem("token", token);
             setSuccess();
